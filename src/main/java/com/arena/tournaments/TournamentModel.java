@@ -20,4 +20,10 @@ public class TournamentModel {
     private String name;
     private String game;
     private String status;
+
+    public TournamentModel(String name, String game, String status) {
+        this.name = name;
+        this.game = game;
+        this.status = status;
+    }
 }
