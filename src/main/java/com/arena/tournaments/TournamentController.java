@@ -1,5 +1,6 @@
 package com.arena.tournaments;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,22 +23,23 @@ public class TournamentController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getTournament(@PathVariable Long id){
+    public ResponseEntity<?> getTournament(@PathVariable Long id) {
         Optional<TournamentModel> tournament = service.getTournament(id);
 
         return ResponseEntity.of(tournament);
     }
 
     @PostMapping("")
-    public ResponseEntity<TournamentModel> postTournament(@RequestBody TournamentModel tournament){
-        TournamentModel model = service.createTournament(tournament);
+    public ResponseEntity<?> postTournament(@RequestBody @Valid TournamentModel tournament) {
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(model);
+        TournamentModel model = service.createTournament(tournament);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(model);
+
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateTournament(@PathVariable Long id, @RequestBody TournamentModel actualizedTournament){
+    public ResponseEntity<?> updateTournament(@PathVariable Long id, @RequestBody @Valid TournamentModel actualizedTournament) {
         Optional<TournamentModel> tournament = service.updateTournament(id,actualizedTournament);
 
         return ResponseEntity.of(tournament);
