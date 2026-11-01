@@ -23,7 +23,14 @@ public class TournamentService {
         return repository.findById(id);
     }
 
-    public TournamentModel createTournament(TournamentModel tournament){
+    public TournamentModel createTournament(TournamentModel tournament) {
+
+        String name = tournament.getName();
+
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Empty name");
+        }
+
         return repository.save(tournament);
     }
 
