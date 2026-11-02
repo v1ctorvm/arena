@@ -25,17 +25,16 @@ public class TournamentService {
 
     public TournamentModel createTournament(TournamentModel tournament) {
 
-        String name = tournament.getName();
-
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Empty name");
-        }
+        validateTournamentName(tournament.getName());
 
         return repository.save(tournament);
     }
 
     @Transactional
     public Optional<TournamentModel> updateTournament(Long id, TournamentModel tournamentModel){
+
+        validateTournamentName(tournamentModel.getName());
+
         Optional<TournamentModel> tournament = repository.findById(id);
 
         tournament.ifPresent(existing -> {
@@ -54,5 +53,11 @@ public class TournamentService {
                 repository.deleteById(id));
 
         return tournament;
+    }
+
+    private void validateTournamentName(String name){
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Empty name");
+        }
     }
 }

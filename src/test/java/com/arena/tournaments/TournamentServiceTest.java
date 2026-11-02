@@ -9,6 +9,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -40,6 +42,34 @@ class TournamentServiceTest {
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class,() -> service.createTournament(tournamentWithNameNull));
+    }
+
+    @Test
+    @DisplayName("Nao é possível atualizar nome de um torneio para um nome nulo")
+    void shouldNotUpdateTournamentNameWithNullName(){
+        // Arrange
+        TournamentModel tournamentWithNullName = new TournamentModel(null,"Counter Strike 2","OPEN");
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> service.updateTournament(1L,tournamentWithNullName));
+    }
+
+    @Test
+    @DisplayName("Deve atualizar o nome do torneio com sucesso")
+    void shouldUpdateTournamentNameSuccessfully() {
+        // Arrange
+        TournamentModel tournament = new TournamentModel(1L,"CS2","Counter Strike 2","OPEN");
+
+        when(repository.findById(1L))
+                .thenReturn(Optional.of(tournament));
+
+        TournamentModel tournamentUpdate = new TournamentModel("Arena Mensal Championship","Counter Strike 2","OPEN");
+
+        // Act
+        service.updateTournament(1L,tournamentUpdate);
+
+        // Assert
+        assertEquals("Arena Mensal Championship",tournament.getName());
     }
 
     @Test
