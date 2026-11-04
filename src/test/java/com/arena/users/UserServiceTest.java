@@ -7,10 +7,13 @@ import org.junit.jupiter.api.condition.DisabledIf;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,6 +32,11 @@ public class UserServiceTest {
 
     @InjectMocks
     private UserService service;
+
+    @Spy
+    private UserMapper mapper = new UserMapper();
+
+
 
 
 
@@ -50,7 +58,7 @@ public class UserServiceTest {
     @DisplayName("Deve criar o usuário corretamente")
     void shouldCreateUser(){
         // Arrange
-        UserModel user = new UserModel("Jhon Doe", "jdoe@mail.com","strongpass");
+        UserModel user = new UserModel("John Doe", "jdoe@mail.com","strongpass");
 
         when(repository.findByEmail(user.getEmail()))
                 .thenReturn(Optional.empty());
@@ -90,7 +98,7 @@ public class UserServiceTest {
         // Arrange
         encoder = new BCryptPasswordEncoder();
 
-        UserModel user  = new UserModel("Jhon Doe", "Jhon@gmail.com","password");
+        UserModel user  = new UserModel("John Doe", "Jhon@gmail.com","password");
 
         // Act
         String hashedPassword = encoder.encode(user.getPassword());
@@ -105,9 +113,9 @@ public class UserServiceTest {
     void shouldCreateUserWithHashedPassword() {
         // Arrange
         PasswordEncoder realEncoder = new BCryptPasswordEncoder();
-        service = new UserService(repository,realEncoder);
+        service = new UserService(repository, realEncoder, mapper);
 
-        UserModel user = new UserModel("Jhon","Jhon@mail.com","Arena123");
+        UserModel user = new UserModel("John","Jhon@mail.com","Arena123");
 
         when(repository.save(user)).thenReturn(user);
 
@@ -116,7 +124,28 @@ public class UserServiceTest {
 
         // Assert
         assertTrue(realEncoder.matches("Arena123", user.getPassword()));
+    }
 
+    @Test
+    @DisplayName("Deve retornar todos os usuarios cadastrados")
+    void shouldReturnAllUsers(){
+        // Arrange
+        List<UserModel> users = new ArrayList<>(List.of(
+                new UserModel("John","Jhon@mail.com","Arena123"),
+                new UserModel("Jane","Jane@mail.com","Arena123")
+        ));
+
+
+        when(repository.findAll()).thenReturn(users);
+
+        // Act
+        List<UserResponseDTO> response = service.findAllUsers();
+
+        // Assert
+        assertEquals(2, response.size());
+
+        assertEquals("John", response.get(0).name());
+        assertEquals("Jane", response.get(1).name());
 
     }
 
