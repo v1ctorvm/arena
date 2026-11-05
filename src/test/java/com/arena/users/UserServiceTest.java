@@ -1,6 +1,7 @@
 package com.arena.users;
 
 import com.arena.exceptions.EmailAlreadyExistsException;
+import com.arena.exceptions.UserNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
@@ -148,5 +149,35 @@ public class UserServiceTest {
         assertEquals("Jane", response.get(1).name());
 
     }
+
+    @Test
+    @DisplayName("Deve retornar apenas o usuário com o ID buscado")
+    void shouldReturnUserById(){
+        // Arrange
+        UserModel user = new UserModel(1L,"John","Jhon@mail.com","Arena123");
+
+        when(repository.findById(1L)).thenReturn(Optional.of(user));
+
+        // Act
+        UserResponseDTO response = service.findUserById(1L);
+
+        // Assert
+        assertEquals(user.getId(),response.id());
+        assertEquals(user.getName(),response.name());
+        assertEquals(user.getEmail(),response.email());
+
+    }
+
+    @Test
+    @DisplayName("Deve retornar uma exception se o usuario buscado pelo ID nao existe")
+    void shouldThrowExceptionWhenUserNotFound(){
+        // Arrange
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(UserNotFoundException.class, () -> service.findUserById(99L));
+    }
+
+
 
 }

@@ -1,6 +1,7 @@
 package com.arena.users;
 
 import com.arena.exceptions.EmailAlreadyExistsException;
+import com.arena.exceptions.UserNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +69,7 @@ public class UserControllerTest {
 
         when(service.findAllUsers()).thenReturn(users);
 
+        // Act & Assert
         mockMvc.perform(get("/api/users"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
@@ -75,6 +77,34 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$[1].name").value("Jane"))
                 .andExpect(jsonPath("$[0].password").doesNotExist());
 
+    }
+
+    @Test
+    @DisplayName("Deve listar apenas o usuario com o ID buscado")
+    void shouldReturnUserById() throws Exception {
+        // Arrange
+        UserResponseDTO userResponse = new UserResponseDTO(1L,"John","jhon@mail.com");
+
+        when(service.findUserById(1L)).thenReturn(userResponse);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/users/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("John"))
+                .andExpect(jsonPath("$.password").doesNotExist());
+
+    }
+
+    @Test
+    @DisplayName("Deve retornar 404 quando o usuário não existir")
+    void shouldReturnNotFoundWhenUserNotFound() throws Exception {
+        // Arrange
+        when(service.findUserById(99L))
+                .thenThrow(new UserNotFoundException("User with id 99 not found"));
+
+        // Act & Assert
+        mockMvc.perform(get("/api/users/99"))
+                .andExpect(status().isNotFound());
     }
 
 

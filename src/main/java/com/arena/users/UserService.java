@@ -1,6 +1,7 @@
 package com.arena.users;
 
 import com.arena.exceptions.EmailAlreadyExistsException;
+import com.arena.exceptions.UserNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -46,6 +47,12 @@ public class UserService {
         return users.stream()
                 .map(mapper::map)
                 .collect(Collectors.toList());
+    }
+
+    public UserResponseDTO findUserById(Long id){
+        Optional<UserModel> model = repository.findById(id);
+
+        return model.map(mapper::map).orElseThrow(() -> new UserNotFoundException("User with id " + id + " not found"));
     }
 
 
