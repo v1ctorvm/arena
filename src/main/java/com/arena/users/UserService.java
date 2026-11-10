@@ -55,6 +55,17 @@ public class UserService {
         return model.map(mapper::map).orElseThrow(() -> new UserNotFoundException("User with id " + id + " not found"));
     }
 
+    public UserResponseDTO updateUser(Long id, UserUpdateRequestDTO updateRequestDTO){
+        UserModel model = repository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User with id " + id + " not found"));
+
+        model.setEmail(updateRequestDTO.email());
+        model.setName(updateRequestDTO.name());
+
+        repository.save(model);
+
+        return mapper.map(model);
+    }
 
 
 

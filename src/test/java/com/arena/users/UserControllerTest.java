@@ -16,8 +16,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -105,6 +104,52 @@ public class UserControllerTest {
         // Act & Assert
         mockMvc.perform(get("/api/users/99"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Deve atualizar corretamente o usuário")
+    void shouldCorrectlyUpdateUser() throws Exception {
+        // Arrange
+        UserUpdateRequestDTO userUpdateRequestDTO = new UserUpdateRequestDTO("John Updated","johnupdated@mail.com");
+        UserResponseDTO userResponseDTO = new UserResponseDTO(1L,"John Updated","johnupdated@mail.com");
+
+        when(service.updateUser(1L,userUpdateRequestDTO)).thenReturn(userResponseDTO);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/users/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                          "name": "John Updated",
+                          "email": "johnupdated@mail.com"
+                        }
+        """)
+        ).andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("John Updated"))
+                .andExpect(jsonPath("$.email").value("johnupdated@mail.com"))
+                .andExpect(jsonPath("$.password").doesNotExist());
+
+    }
+
+    @Test
+    @DisplayName("Deve retornar 404 ao tentar atualizar um usuário inexistente")
+    void shouldReturnNotFoundWhenUpdatingNonexistentUser() throws Exception {
+        UserUpdateRequestDTO userUpdateRequestDTO = new UserUpdateRequestDTO("John","john@mail.com");
+
+        when(service.updateUser(99L,userUpdateRequestDTO))
+                .thenThrow(new UserNotFoundException("User with id 99 not found"));
+
+        // Act & Assert
+        mockMvc.perform(put("/api/users/99")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                          "name": "John",
+                          "email": "john@mail.com"
+                        }
+        """)
+        ).andExpect(status().isNotFound());
+
     }
 
 

@@ -18,8 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 
@@ -176,6 +175,39 @@ public class UserServiceTest {
 
         // Act & Assert
         assertThrows(UserNotFoundException.class, () -> service.findUserById(99L));
+    }
+
+    @Test
+    @DisplayName("Deve atualizar os dados de um usuario existente")
+    void shouldUpdateExistingUser(){
+        // Arrange
+        UserModel user = new UserModel(1L,"John","jhon@mail.com","password");
+
+        when(repository.findById(1L)).thenReturn(Optional.of(user));
+
+        UserUpdateRequestDTO userUpdateRequest = new UserUpdateRequestDTO("John Updated","john.updated@mail.com");
+
+        // Act
+        UserResponseDTO response = service.updateUser(1L, userUpdateRequest);
+
+        // Assert
+        verify(repository).save(user);
+        assertEquals(1L,response.id());
+        assertEquals("John Updated",response.name());
+        assertEquals("john.updated@mail.com",response.email());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao atualizar um usuário inexistente")
+    void shouldThrowExceptionWhenUpdatingNonexistentUser() {
+        // Arrange
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        UserUpdateRequestDTO userUpdateRequest = new UserUpdateRequestDTO("John Updated","john.updated@mail.com");
+
+        // Act & Assert
+        assertThrows(UserNotFoundException.class, () -> service.updateUser(99L,userUpdateRequest));
+        verify(repository, never()).save(any(UserModel.class));
     }
 
 
